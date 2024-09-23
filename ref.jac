@@ -93,6 +93,7 @@ import:py from langchain_text_splitters {RecursiveCharacterTextSplitter}
 import:py from langchain.schema.document {Document}
 import:py from langchain_community.embeddings.ollama {OllamaEmbeddings}
 import:py from langchain_community.vectorstores.chroma {Chroma}
+
 obj RagEngine {
     has file_path: str = "docs";
     has chroma_path: str = "chroma";
@@ -232,7 +233,8 @@ node Session {
 
 enum ChatType {
     RAG : 'Need to use Retrievable information in specific documents to respond' = "RAG",
-    QA : 'Given context is enough for an answer' = "user_qa"
+    QA : 'Given context is enough for an answer' = "user_qa",
+    Comfort : 'Given context and provide emotional supports' = "Comfort"
 }
 
 node Router {
@@ -240,23 +242,27 @@ node Router {
     classify(message:'query from the user to be routed.':str) -> ChatType by llm(method="Reason", temperature=0.0);
 }
 
+
 walker infer {
     has message:str;
     has chat_history: list[dict];
 
     can init_router with `root entry {
-        visit [-->](`?Router) else {
+        
             router_node = here ++> Router();
             router_node ++> RagChat();
             router_node ++> QAChat();
+            router_node ++> ComfortChat();
             visit router_node;
-        }
+        
     }
     can route with Router entry {
         classification = here.classify(message = self.message);
         print(f"Routing to chat type: {classification}");
         visit [-->](`?Chat)(?chat_type==classification);
     }
+
+    
 }
 node Chat {
     has chat_type: ChatType;
@@ -290,3 +296,16 @@ node QAChat :Chat: {
     }
 }
 
+node ComfortChat :Chat: {
+    has chat_type: ChatType = ChatType.Comfort;
+
+    can respond with infer entry {
+        can 'Respond to message using chat_history as context and agent_role as the goal of the agent'
+        respond_with_llm(   message:'current message':str,
+            chat_history: 'chat history':list[dict],
+            agent_role:'role of the agent responding':str
+                ) -> 'response':str by llm();
+        here.response = respond_with_llm(here.message, here.chat_history, agent_role="You are a conversation agent designed to provide emotional support to the users");
+    }
+
+}

@@ -93,6 +93,7 @@ import:py from langchain_text_splitters {RecursiveCharacterTextSplitter}
 import:py from langchain.schema.document {Document}
 import:py from langchain_community.embeddings.ollama {OllamaEmbeddings}
 import:py from langchain_community.vectorstores.chroma {Chroma}
+
 obj RagEngine {
     has file_path: str = "docs";
     has chroma_path: str = "chroma";
@@ -178,6 +179,8 @@ glob llm = Ollama(model_name='llama3.1');
 # glob llm = Ollama(model_name='qwen2.5');
 import:jac from rag {RagEngine}
 glob rag_engine:RagEngine = RagEngine();
+
+
 walker interact {
     has message: str;
     has session_id: str;
