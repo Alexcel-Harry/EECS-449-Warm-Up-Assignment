@@ -174,8 +174,11 @@ obj RagEngine {
 
 import:py from mtllm.llms {Ollama}
 
+
+# 2 Models Are Here
 # glob llm = Ollama(model_name='llama3.1');
 glob llm = Ollama(model_name='qwen2.5');
+
 import:jac from rag {RagEngine}
 glob rag_engine:RagEngine = RagEngine();
 node Session {
